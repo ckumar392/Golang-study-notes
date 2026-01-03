@@ -1,10 +1,13 @@
-# Go - Golang quick intro study notes. 📝💨
+# Go - Golang Quick Intro Study Notes 📝💨
 
-This is my study notes for Golang. It is a quick intro/guide to start with golang if you have prior programming experience.
+Comprehensive Go study notes for SDE interviews. This guide covers Go fundamentals through advanced topics, with interview tips and common gotchas highlighted throughout.
 
-## Table of content
-- [🏓Go Fundmentals](#--go-fundmentals)
+> 🎯 = Interview Tips | ⚠️ = Common Gotchas/Pitfalls
+
+## Table of Contents
+- [🏓 Go Fundamentals](#-go-fundamentals)
   * [Notes](#notes)
+  * [Zero Values Table](#zero-values-table)
   * [Variables Declaration](#variables-declaration)
   * [Go Primitive Types](#go-primitive-types)
   * [Visibility](#visibility)
@@ -15,47 +18,48 @@ This is my study notes for Golang. It is a quick intro/guide to start with golan
   * [Go For-Loops](#go-for-loops)
   * [Go For-Each loop](#go-for-each-loop)
   * [Go Switch Statement](#go-switch-statement)
-  * [Type Function and Returning Functions](#type-function-and-returning-functions)
-- [✨Go functions and return types.](#-go-functions-and-return-types)
-  * [Notes](#notes-1)
+- [✨ Go Functions and Return Types](#-go-functions-and-return-types)
   * [Typical Function](#typical-function)
   * [Multiple Returns](#multiple-returns)
   * [Named Returns](#named-returns)
-  * [Variadic Functions / Variable arguments list](#variadic-functions---variable-arguments-list)
+  * [Variadic Functions](#variadic-functions---variable-arguments-list)
   * [Type Function and Returning Functions](#type-function-and-returning-functions-1)
-  * [Callbacks - Passing functions as argument](#callbacks---passing-functions-as-argument)
+  * [Callbacks](#callbacks---passing-functions-as-argument)
   * [Defer Keyword](#defer-keyword)
-  * [Receivers](#receivers)
-  * [Overriding Receivers](#overriding-receivers)
-- [🏗Go Data-Structures](#--go-data-structures)
-  * [Arrays](#arrays)
-  * [Slices](#slices)
-  * [Iterating over a Slice](#iterating-over-a-slice)
+  * [Receivers (Value vs Pointer)](#receivers)
+  * [Method Shadowing](#method-shadowing-with-embedded-types)
+- [🏗 Go Data Structures](#-go-data-structures)
+  * [Arrays (Value Types!)](#arrays)
+  * [Slices (Internal Structure)](#slices)
   * [Appending to Slice](#appending-to-slice)
   * [Common Slice Functions](#common-slice-functions)
-  * [Slices Tricks](#slices-tricks)
   * [Maps](#maps)
-- [🏢Go Structs / OOP](#--go-structs---oop)
-  * [Notes](#notes-2)
-  * [Go supports](#go-supports)
-    + [Encapsulation](#encapsulation)
-    + [Inheritance and Reusability](#inheritance-and-reusability)
-    + [Polymorphism and Interfaces](#polymorphism-and-interfaces)
-    + [Overriding](#overriding)
-- [🥂Go Concurrency](#--go-concurrency)
-  * [Intro](#intro)
-  * [Notes](#notes-3)
-  * [mutex Locks, WaitGroups, and Atomic operations](#mutex-locks--waitgroups--and-atomic-operations)
+  * [Critical Map Behaviors](#️-critical-map-behaviors-interview-favorites)
+- [🏢 Go Structs / OOP](#-go-structs--oop)
+  * [Composition (Not Inheritance!)](#composition-not-inheritance)
+  * [Polymorphism and Interfaces](#polymorphism-and-interfaces)
+  * [Empty Interface and Type Assertions](#empty-interface-and-type-assertions)
+  * [The Nil Interface Gotcha](#️-the-nil-interface-gotcha-classic-interview-question)
+- [🥂 Go Concurrency](#-go-concurrency)
+  * [Goroutines vs OS Threads](#goroutines-vs-os-threads-important-for-interviews)
+  * [The sync Package](#the-sync-package)
   * [Go Channels](#go-channels)
-    + [Example 1](#example-1)
-    + [Example 2](#example-2)
-    + [Example 3](#example-3)
-    + [Example 4](#example-4)
-    + [Example 5 - Semaphores](#example-5---semaphores)
-    + [Example 6 - Using channels as arguments/returns](#example-6---using-channels-as-arguments-returns)
-- [🐞Go Error Handling](#--go-error-handling)
-  * [Notes](#notes-4)
-  * [Example](#example)
+  * [Channel Operations Cheat Sheet](#️-channel-operations-cheat-sheet-memorize-this)
+  * [Select Statement](#select-statement-critical-for-interviews)
+  * [Context Package](#context-package-essential-for-production-code)
+  * [Common Concurrency Patterns](#common-concurrency-patterns)
+- [🐞 Go Error Handling](#-go-error-handling)
+  * [Error Wrapping (Go 1.13+)](#error-wrapping-go-113)
+  * [Panic and Recover](#panic-and-recover)
+- [🧬 Go Generics (Go 1.18+)](#-go-generics-go-118)
+  * [Type Parameters](#type-parameters)
+  * [Generic Types](#generic-types)
+  * [Constraints](#constraints)
+- [🧪 Go Testing](#-go-testing)
+  * [Table-Driven Tests](#table-driven-tests-go-idiom)
+  * [Benchmarks](#benchmarks)
+- [� Go Modules](#-go-modules)
+- [🎯 Interview Quick Reference](#-interview-quick-reference)
 
 
 --------------------------------------------------------------------------
@@ -82,9 +86,56 @@ This is my study notes for Golang. It is a quick intro/guide to start with golan
 ```
 
 2. **Blank Identifier**: Use `_` to replace unused variables.
-3. there are two primitive ways to allocate to a pointer, `new()` and `make()`, they differ though, we will discuss that later, briefly new returns pointer, make return value. read [Doc](https://golang.org/doc/effective_go.html#allocation_new).
-4. Every thing is `passed by value` except **arrays, slices, maps and channels** which some calls r**eference types**, these types are passed by reference ( they internally have pointers, so no copying of the actual data happens when passing them) . 
-5. Unlike in C, it's perfectly OK to return the address of a local variable; the storage associated with the variable survives after the function returns.
+
+3. **`new()` vs `make()`** - Two ways to allocate memory, but they're different:
+
+| `new(T)` | `make(T)` |
+|----------|-----------|
+| Allocates zeroed storage | Initializes the internal data structure |
+| Returns `*T` (pointer) | Returns `T` (value) |
+| Works with any type | **Only for slice, map, channel** |
+| Memory is zeroed but not initialized | Memory is initialized and ready to use |
+
+``` Go
+// new - returns pointer to zeroed memory
+p := new(int)       // *int, value is 0
+s := new([]int)     // *[]int, value is nil slice (unusable!)
+
+// make - initializes and returns value
+slice := make([]int, 5)      // []int with len=5, cap=5
+m := make(map[string]int)    // initialized empty map (ready to use)
+ch := make(chan int, 10)     // buffered channel with capacity 10
+```
+
+> 🎯 **Interview Tip:** "Why can't you use `new` for maps?" - Because `new` only zeroes memory, and a zeroed map is `nil`, which panics on write.
+
+4. **⚠️ IMPORTANT: Everything in Go is passed by VALUE.** This is a common misconception. Slices, maps, and channels are NOT passed by reference. They are structs/pointers that are copied by value, but they contain internal pointers to underlying data. When you pass a slice, you copy the slice header (pointer, length, capacity), but both headers point to the same underlying array.
+
+``` Go
+// Arrays are VALUE types - fully copied when passed
+func modifyArray(arr [3]int) {
+    arr[0] = 999  // Modifies the COPY, not the original
+}
+
+func main() {
+    a := [3]int{1, 2, 3}
+    modifyArray(a)
+    fmt.Println(a)  // Still [1 2 3] - original unchanged!
+}
+
+// Slices contain a pointer internally, so modifications affect original data
+func modifySlice(s []int) {
+    s[0] = 999  // Modifies underlying array through copied pointer
+}
+
+func main() {
+    s := []int{1, 2, 3}
+    modifySlice(s)
+    fmt.Println(s)  // [999 2 3] - data changed!
+}
+```
+
+5. Unlike in C, it's perfectly OK to return the address of a local variable; the storage associated with the variable survives after the function returns (Go performs escape analysis and allocates to heap when needed).
 
 ## Variables Declaration
 
@@ -106,6 +157,24 @@ This is my study notes for Golang. It is a quick intro/guide to start with golan
 ```
 
 *Uninitialized variables are given its zero value *(e.g int = 0, string = "", bool = false)* 
+
+### Zero Values Table
+
+| Type | Zero Value |
+|------|------------|
+| `int`, `float64`, all numeric types | `0` |
+| `string` | `""` (empty string) |
+| `bool` | `false` |
+| `pointer` | `nil` |
+| `slice` | `nil` (length 0, capacity 0) |
+| `map` | `nil` (unusable until initialized) |
+| `channel` | `nil` |
+| `interface` | `nil` |
+| `function` | `nil` |
+| `struct` | All fields set to their zero values |
+| `array` | All elements set to their zero values |
+
+> 🎯 **Interview Tip:** A nil slice can be appended to, but a nil map will panic on write!
 
 ## Go Primitive Types
 
@@ -178,15 +247,50 @@ fmt.Println("You Entered z:", z)
 ```
 ## Iota
 
-iota in Go, is a value used within the **const** block, its value starts at 0 per block, and increment each time it is used again
+`iota` is a special constant generator in Go. Its value starts at 0 within a `const` block and increments by 1 for each constant specification.
 
 ``` Go
+// Basic usage - iota resets to 0 in each const block
 const (
   c0 = iota  // c0 == 0
   c1 = iota  // c1 == 1
   c2 = iota  // c2 == 2
 )
+
+// Implicit iota - same as above (more idiomatic)
+const (
+  a = iota  // 0
+  b         // 1 (iota is implicit)
+  c         // 2
+)
+
+// Skip values with blank identifier
+const (
+  _ = iota  // 0 (skipped)
+  One       // 1
+  Two       // 2
+)
+
+// Byte sizes pattern (very common in interviews!)
+const (
+  _  = iota             // 0 (skip)
+  KB = 1 << (10 * iota) // 1 << 10 = 1024
+  MB                    // 1 << 20 = 1,048,576
+  GB                    // 1 << 30 = 1,073,741,824
+  TB                    // 1 << 40
+)
+
+// Bit flags pattern (common for permissions/options)
+const (
+  FlagRead    = 1 << iota  // 1 (binary: 001)
+  FlagWrite                // 2 (binary: 010)
+  FlagExecute              // 4 (binary: 100)
+)
+
+// Usage: permissions := FlagRead | FlagWrite  // 3 (binary: 011)
 ```
+
+> 🎯 **Interview Tip:** Bit flags with iota is a common pattern. Know how to use bitwise OR (`|`) to combine and AND (`&`) to check flags.
 
 ## Go Pointers
 
@@ -326,8 +430,9 @@ func wrapper() func() int {
 
 ## Notes
 
-- Again Everything is `passed by value` except **arrays, slices, maps and channels** which some calls r**eference types**, these types are passed by reference.
-- unlike in C, it's perfectly OK to return the address of a local variable; the storage associated with the variable survives after the function returns.
+- **Everything in Go is passed by value.** Slices, maps, and channels contain internal pointers, so modifications to their contents affect the original data, but the slice/map/channel header itself is copied.
+- Unlike in C, it's perfectly OK to return the address of a local variable; the storage associated with the variable survives after the function returns (Go's escape analysis moves it to heap).
+- Functions are first-class citizens - they can be assigned to variables, passed as arguments, and returned from other functions.
 
 ## Typical Function
 ``` Go
@@ -456,7 +561,8 @@ func main() {
 ```
 ## Defer Keyword
 
-`Defer` used before a functions executes the function at the end of the scope of it, think of it as a destructor for the scope. usually used to close opened files/buffers so u open the file and closes it using defer in the next line to keep things clean. they're executed as a **stack**.
+`defer` schedules a function call to execute when the surrounding function returns. Deferred calls are executed in **LIFO (stack) order**. Common uses: closing files, unlocking mutexes, cleanup operations.
+
 ```Go
 fmt.Println("One")
 defer fmt.Println("Four")
@@ -465,14 +571,60 @@ fmt.Println("Two")
 
 //Prints One Two Three Four
 ```
+
+### ⚠️ Critical Defer Behaviors (Common Interview Questions!)
+
+```Go
+// 1. Arguments are evaluated IMMEDIATELY, not when deferred function runs
+func main() {
+    x := 10
+    defer fmt.Println(x)  // Prints 10, NOT 20
+    x = 20
+    fmt.Println("x is now", x)
+}
+// Output: x is now 20
+//         10
+
+// 2. Deferred functions CAN modify named return values
+func example() (result int) {
+    defer func() { result++ }()
+    return 10  // Returns 11, not 10!
+}
+
+// 3. ⚠️ Defer in loops - MEMORY LEAK potential!
+// BAD - all defers stack up until function exits
+for i := 0; i < 1000000; i++ {
+    f, _ := os.Open(files[i])
+    defer f.Close()  // 1 million defers waiting!
+}
+
+// GOOD - wrap in anonymous function
+for i := 0; i < 1000000; i++ {
+    func() {
+        f, _ := os.Open(files[i])
+        defer f.Close()  // Executes at end of anonymous function
+    }()
+}
+
+// 4. Defer runs even if function panics
+func riskyOperation() {
+    defer fmt.Println("This WILL print even if panic occurs")
+    panic("something went wrong")
+}
+```
+
+> 🎯 **Interview Tip:** "What happens if you defer in a loop?" is a classic gotcha. Always explain the memory implications.
+
 ## Receivers
 
-Receiver are the way you create a method for a specific type/struct 
+Receivers are Go's way of attaching methods to types. They come in two forms: **value receivers** and **pointer receivers**.
+
 ``` Go
 type rect struct {
     width, height int
 }
 
+// Pointer receiver - can modify the receiver
 func (r *rect) area() int {
     return r.width * r.height
 }
@@ -482,7 +634,46 @@ r := rect{2,3}
 areaX := r.area()
 fmt.Println(areaX)
 ```
-## Overriding Receivers
+
+### Value vs Pointer Receivers (Critical for Interviews!)
+
+```Go
+type Counter struct {
+    count int
+}
+
+// Value receiver - operates on a COPY, original unchanged
+func (c Counter) IncrementValue() {
+    c.count++  // Modifies copy only!
+}
+
+// Pointer receiver - operates on the ORIGINAL
+func (c *Counter) IncrementPointer() {
+    c.count++  // Modifies original
+}
+
+func main() {
+    c := Counter{count: 0}
+    
+    c.IncrementValue()
+    fmt.Println(c.count)  // Still 0!
+    
+    c.IncrementPointer()
+    fmt.Println(c.count)  // Now 1
+}
+```
+
+### When to Use Pointer Receivers:
+1. **When you need to modify the receiver** (most common reason)
+2. **When the struct is large** (avoid copying overhead)
+3. **For consistency** - if one method needs a pointer receiver, use pointer for ALL methods
+
+> 🎯 **Interview Tip:** Go automatically dereferences/takes address when calling methods. `c.IncrementPointer()` works even though `c` is not a pointer.
+
+## Method Shadowing with Embedded Types
+
+**Note:** Go does NOT have traditional method overriding. What happens with embedded types is called **method shadowing** - the outer type's method shadows the inner type's method, but both still exist.
+
 ```Go
  type Person struct {
     First string
@@ -491,7 +682,7 @@ fmt.Println(areaX)
    }
 
    type Employee struct {
-    Person
+    Person  // Embedded type
     ID string
     Salary int
    }
@@ -500,9 +691,9 @@ fmt.Println(areaX)
     return p.First + " " + p.Last
    }
 
-   //Override
-   func (p Employee) FullName() string{
-    return p.ID + " " + p.First + " " + p.Last
+   // This SHADOWS Person.FullName, doesn't override it
+   func (e Employee) FullName() string{
+    return e.ID + " " + e.First + " " + e.Last
    }
 
 
@@ -533,14 +724,41 @@ Arrays, Slices, Maps, and Structs
 ## Arrays
 
 - Arrays are of **static size**, size can't be changed in arrays.
+- **⚠️ Arrays are VALUE types** - they are fully copied when passed to functions or assigned!
 - Arrays elements do not need to be initialized explicitly; the zero value of the type is the initial value.
+- The size is part of the type: `[5]int` and `[10]int` are different types!
+
 ``` Go
     var x[15] int
     var twoD [2][3] int
+    
+    // Arrays are copied by value!
+    a := [3]int{1, 2, 3}
+    b := a        // b is a COPY of a
+    b[0] = 999
+    fmt.Println(a) // [1 2 3] - unchanged!
+    fmt.Println(b) // [999 2 3]
 ```
+
 ## Slices
 
-Slices are of dynamic size.
+Slices are dynamic, flexible views into arrays. **Understanding slice internals is critical for interviews.**
+
+### Slice Internal Structure (24 bytes on 64-bit systems)
+
+```
+Slice Header:
+┌─────────────────────┬──────────────┬──────────────┐
+│ Pointer to array    │   Length     │   Capacity   │
+│     (8 bytes)       │  (8 bytes)   │  (8 bytes)   │
+└──────────┬──────────┴──────────────┴──────────────┘
+           │
+           ▼
+┌───┬───┬───┬───┬───┬───┬───┬───┐
+│ 0 │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │ 7 │  ← Underlying Array
+└───┴───┴───┴───┴───┴───┴───┴───┘
+```
+
 ``` GO
     letters := []string{"a", "b", "c", "d"}
     
@@ -551,6 +769,10 @@ Slices are of dynamic size.
     s := make([]byte, 5)
     
     // both equiavlent to: s == []byte{0, 0, 0, 0, 0}
+    
+    // len() = number of elements accessible
+    // cap() = max elements before reallocation needed
+    fmt.Println(len(s), cap(s))  // 5, 5
 ```
 - A slice does not store any data, it just describes a section of an underlying array. Changing the elements of a slice modifies the corresponding elements of its underlying array. **Other slices that share the same underlying array will see those changes**.
 - Slicing a slice changes pointers of the underlying array, so it is as efficient as manipulating array indices, size and capacity of the new slice are changed too, capacity is equal `old capacity - sliced part from the beginning only`
@@ -581,7 +803,8 @@ Slices are of dynamic size.
 
 ## Appending to Slice
 
-Append return a whole new array (not reference).
+`append` returns a new slice header (always assign the result!).
+
 ``` Go
       var s []int
     	// append works on nil slices.
@@ -589,6 +812,43 @@ Append return a whole new array (not reference).
     	// The slice grows as needed.
     	s = append(s, 1)
 ```
+
+### Append Behavior and Capacity Growth
+
+- If **capacity is sufficient**: appends to existing array, returns slice pointing to same array
+- If **capacity is insufficient**: allocates NEW array, copies data, returns slice pointing to new array
+
+**Capacity Growth Strategy (Go 1.18+):**
+- If `cap < 256`: double the capacity
+- If `cap >= 256`: grow by ~25% (`cap + cap/4 + 192`)
+
+```Go
+// Watch capacity grow
+s := make([]int, 0)
+for i := 0; i < 10; i++ {
+    s = append(s, i)
+    fmt.Printf("len=%d cap=%d\n", len(s), cap(s))
+}
+// cap grows: 1, 2, 4, 8, 16...
+```
+
+> 🎯 **Interview Tip:** Pre-allocate when you know the size to avoid reallocations:
+```Go
+// BAD - many reallocations
+var results []int
+for i := 0; i < 1000; i++ {
+    results = append(results, i)
+}
+
+// GOOD - single allocation
+results := make([]int, 0, 1000)  // Pre-allocate capacity
+for i := 0; i < 1000; i++ {
+    results = append(results, i)
+}
+```
+
+### ⚠️ Append Gotcha (Classic Interview Question)
+
 Append add element at the end of the slice **if there is enough capacity** and r**eturn a reference type**!, if **not enough capacity** it allocate and copy to a new array and **return it as a new value**! and the **old array points to the old data**.
 
 If Append had enough capacity (didn't allocate new array) then ***changing a value in the new returned array changes the value in the old***! but if it allocated a new array to expand capacity, then **changing a value at an index of the newly returned array *DOESN'T* change the old array!**
@@ -692,6 +952,40 @@ n := map[string]int{"foo": 1, "bar": 2}
 fmt.Println("map:", n)
 ```
 
+### ⚠️ Critical Map Behaviors (Interview Favorites!)
+
+```Go
+// 1. Map iteration order is RANDOM (by design, for security)
+m := map[string]int{"a": 1, "b": 2, "c": 3}
+for k, v := range m {
+    fmt.Println(k, v)  // Order varies each run!
+}
+
+// 2. Nil map - reading is OK, writing PANICS
+var m map[string]int  // nil map
+_ = m["key"]          // OK - returns zero value
+m["key"] = 1          // PANIC: assignment to nil map
+
+// 3. Always check if key exists (important pattern!)
+value, ok := m["key"]
+if !ok {
+    // key doesn't exist
+    fmt.Println("key not found")
+}
+
+// 4. Delete is safe even if key doesn't exist
+delete(m, "nonexistent")  // No panic, no-op
+
+// 5. Maps are NOT safe for concurrent use!
+// Use sync.Map or protect with mutex for concurrent access
+
+// 6. You cannot take the address of a map element
+// m["key"] is not addressable
+// ptr := &m["key"]  // COMPILE ERROR
+```
+
+> 🎯 **Interview Tip:** "Why is map iteration order random?" - For security (to prevent hash collision attacks) and to discourage depending on order.
+
 
 --------------------------------------------------------------------------
 
@@ -701,10 +995,19 @@ fmt.Println("map:", n)
 
 ## Notes
 
-- in Go you don't create classes, but create types
-- in Go you don't do inheritance, you create a value of the type (sort of delegation or embedding a type inside the other and use its methods with some syntactic sugar.
-- in Go structs fields can have a tag, it is written between `' '` after field type, tags can be used to e.g exclude or rename a field when Encoding/Decoding it to/from JSON
-- Fields and Methods in GO that start with **Uppercase** are exported, hence **they are not seen outside the package and in another packages**, lowercase are unexported fields which are only seen inside their package. e,g Json Encode won't encode unexported fields as Json Encoder package won't be able to access it.
+- In Go you don't create classes, but create **types**
+- **Go does NOT have inheritance** - it uses **composition via embedding** instead. This is a core Go philosophy: "Favor composition over inheritance"
+- Embedded types' fields and methods are "promoted" to the outer type, providing a form of code reuse
+- Struct fields can have tags (written between backticks after field type), used for reflection, JSON encoding, database mapping, etc.
+- Fields and methods starting with **Uppercase** are exported (public), **lowercase** are unexported (package-private)
+
+```Go
+type User struct {
+    Name     string `json:"name"`           // JSON key will be "name"
+    Password string `json:"-"`              // Excluded from JSON
+    Age      int    `json:"age,omitempty"`  // Omit if zero value
+}
+```
 
 ## Go supports
 
@@ -714,7 +1017,9 @@ fmt.Println("map:", n)
 - Methods
 - Public/Private → Exported/unexported
 
-### Inheritance and Reusability
+### Composition (Not Inheritance!)
+
+**⚠️ Important:** Go does NOT have inheritance. What's shown below is **embedding/composition**.
 
 ``` Go
 
@@ -728,8 +1033,8 @@ type Parent struct {
 }
 
 type Child struct {
-  Parent
-  First string
+  Parent       // Embedded type - NOT inheritance!
+  First string // Shadows Parent.First
   Middle string
 }
 
@@ -747,17 +1052,20 @@ func main() {
 
   fmt.Println(x)
 
-  fmt.Println(x.First)
-  fmt.Println(x.Parent.First)
-  fmt.Println(x.Middle)
+  fmt.Println(x.First)        // "Child's First" (shadows Parent.First)
+  fmt.Println(x.Parent.First) // "First" (explicit access)
+  fmt.Println(x.Middle)       // "Middle"
 
-  fmt.Println(x.Last)
-  fmt.Println(x.Parent.Last)
+  fmt.Println(x.Last)         // "Last" (promoted from Parent)
+  fmt.Println(x.Parent.Last)  // "Last" (explicit access)
 
-  fmt.Println(x.Age)
-  fmt.Println(x.Parent.Age)
+  fmt.Println(x.Age)          // 12 (promoted from Parent)
+  fmt.Println(x.Parent.Age)   // 12 (explicit access)
 
 }
+```
+
+> 🎯 **Interview Tip:** "Why doesn't Go have inheritance?" - Go favors composition for flexibility and to avoid the fragile base class problem. Embedding provides code reuse without the tight coupling of inheritance.
 ```
 Packages might need your type to implement its interface to work, for example the `sort` package requires you to implement `swap`, `less`, `equal` methods in order to work. also `fmt.Println()` requires you to implement `func (t T) String() string`
 
@@ -825,7 +1133,92 @@ func main() {
   measure(c)
 }
 ```
-### Overriding
+
+### Empty Interface and Type Assertions
+
+The **empty interface** `interface{}` (or `any` in Go 1.18+) can hold values of any type. It's Go's way of achieving generic programming (before generics were added).
+
+```Go
+// Empty interface can hold anything
+func printAnything(v interface{}) {
+    fmt.Println(v)
+}
+
+printAnything(42)
+printAnything("hello")
+printAnything([]int{1, 2, 3})
+
+// Type assertion - extract concrete type from interface
+var i interface{} = "hello"
+
+// Unsafe - panics if wrong type
+s := i.(string)
+fmt.Println(s)  // "hello"
+
+// Safe - returns ok=false if wrong type
+s, ok := i.(string)
+if ok {
+    fmt.Println("It's a string:", s)
+}
+
+n, ok := i.(int)  // ok = false, n = 0 (zero value)
+
+// Type switch - check multiple types
+func describe(i interface{}) {
+    switch v := i.(type) {
+    case string:
+        fmt.Println("string of length", len(v))
+    case int:
+        fmt.Println("int, doubled:", v*2)
+    case bool:
+        fmt.Println("boolean:", v)
+    default:
+        fmt.Printf("unknown type: %T\n", v)
+    }
+}
+```
+
+### ⚠️ The Nil Interface Gotcha (Classic Interview Question!)
+
+An interface value is `nil` only when BOTH its type and value are nil. This is a major source of bugs!
+
+```Go
+type MyError struct{}
+
+func (e *MyError) Error() string { return "error" }
+
+func getError() error {
+    var e *MyError = nil  // Typed nil pointer
+    return e              // Returns interface containing (type=*MyError, value=nil)
+}
+
+func main() {
+    err := getError()
+    
+    // This is FALSE! The interface is NOT nil!
+    fmt.Println(err == nil)  // false
+    
+    // The interface contains:
+    // - Type: *MyError
+    // - Value: nil
+    // An interface is only nil when BOTH are nil
+}
+
+// Correct way:
+func getErrorCorrect() error {
+    var e *MyError = nil
+    if e == nil {
+        return nil  // Return untyped nil
+    }
+    return e
+}
+```
+
+> 🎯 **Interview Tip:** This is one of the most common Go gotchas. Always return explicit `nil` for interfaces, not typed nil pointers.
+
+### Method Shadowing (Not Overriding)
+
+**Note:** Go doesn't have method overriding. Embedded types' methods are **shadowed**, not overridden. Both methods still exist.
 
 ``` Go
 
@@ -845,9 +1238,9 @@ func main() {
     return p.First + " " + p.Last
   }
 
-  //Override
-  func (p Employee) FullName() string{
-    return p.ID + " " + p.First + " " + p.Last
+  // This SHADOWS Person.FullName, doesn't override it
+  func (e Employee) FullName() string{
+    return e.ID + " " + e.First + " " + e.Last
   }
 
 
@@ -863,8 +1256,8 @@ func main() {
     }
 
     fmt.Println(x)
-    fmt.Println(x.Person.FullName()) //Sherif Abdel-Naby
-    fmt.Println(x.FullName()) 		 //0ID12000ID Sherif Abdel-Naby
+    fmt.Println(x.Person.FullName()) // Sherif Abdel-Naby (Person's method still accessible!)
+    fmt.Println(x.FullName())        // 0ID12000ID Sherif Abdel-Naby (Employee's method)
 ```
 
 
@@ -876,26 +1269,182 @@ func main() {
 
 ## Intro
 
-Go Concurrency is made available by what's called `go-routines` , basically when a function is preceded with the `go` keyword, it runs in a `go-routine`, think of go-routine as a thread (***though they're different...**)**.*** go-routines is one of the most important features of Go that makes it and its concurrency model special.
+Go Concurrency is made available by **goroutines**. When a function is preceded with the `go` keyword, it runs in a goroutine. Goroutines are one of Go's most powerful features.
+
+### Goroutines vs OS Threads (Important for Interviews!)
+
+| Goroutines | OS Threads |
+|------------|------------|
+| ~2KB initial stack (grows/shrinks dynamically) | ~1-8MB fixed stack |
+| Managed by **Go runtime scheduler** | Managed by **OS kernel** |
+| **M:N scheduling** (many goroutines on few threads) | 1:1 with OS |
+| Very cheap to create (millions possible) | Expensive (hundreds/thousands) |
+| Cooperative scheduling with preemption | Preemptive scheduling |
+| Context switch: ~tens of nanoseconds | Context switch: ~microseconds |
+
+```Go
+// Creating a goroutine - just add 'go'
+go myFunction()
+
+go func() {
+    fmt.Println("Anonymous goroutine")
+}()
+```
 
 For data synchronization you can use mutex Locks, WaitGroups, and Atomic operations, however..
-**It's recommended** to use Go Channels for data synchronization, though using the sync package (using mutex, locks, atomics, and WaitGroups) is also usable if it make sense for your use case.
+**It's recommended** to use Go Channels for data synchronization - "Don't communicate by sharing memory; share memory by communicating."
 
 ---
 
 ## Notes
 
-1. GO executable exits with active go routines running.
+1. **GO executable exits when `main()` returns**, even with active goroutines running - they will be terminated abruptly!
+2. **Goroutine leaks** are a common bug - a goroutine blocked forever (e.g., on a channel) consumes memory indefinitely.
 
-## mutex Locks, WaitGroups, and Atomic operations
+## The sync Package
 
-[//TODO](//todo) Example on using synchronization by mutex Locks, WaitGroups, and Atomic operations
+### Mutex (Mutual Exclusion)
+
+```Go
+import "sync"
+
+var (
+    counter int
+    mu      sync.Mutex
+)
+
+func increment() {
+    mu.Lock()
+    defer mu.Unlock()  // Always use defer to ensure unlock
+    counter++
+}
+```
+
+### RWMutex (Read-Write Mutex)
+
+Allows **multiple readers OR one writer** - more efficient when reads are frequent.
+
+```Go
+var (
+    data   map[string]string
+    rwmu   sync.RWMutex
+)
+
+func read(key string) string {
+    rwmu.RLock()         // Multiple goroutines can read simultaneously
+    defer rwmu.RUnlock()
+    return data[key]
+}
+
+func write(key, value string) {
+    rwmu.Lock()          // Exclusive access for writing
+    defer rwmu.Unlock()
+    data[key] = value
+}
+```
+
+### WaitGroup
+
+```Go
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+    wg.Add(1)  // Increment counter BEFORE starting goroutine
+    go func(id int) {
+        defer wg.Done()  // Decrement counter when done
+        fmt.Println("Worker", id)
+    }(i)
+}
+
+wg.Wait()  // Block until counter reaches 0
+fmt.Println("All workers done")
+```
+
+### Once (Singleton Pattern)
+
+```Go
+var (
+    instance *Database
+    once     sync.Once
+)
+
+func GetDatabase() *Database {
+    once.Do(func() {
+        // This runs exactly once, even with concurrent calls
+        instance = &Database{}
+        instance.Connect()
+    })
+    return instance
+}
+```
+
+### Pool (Object Reuse)
+
+```Go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return make([]byte, 1024)
+    },
+}
+
+func process() {
+    buf := bufferPool.Get().([]byte)
+    defer bufferPool.Put(buf)  // Return to pool when done
+    // Use buf...
+}
+```
 
 ## Go Channels
 
-- channels in layman terms are like a synchronized bucket that contains data, a go-routine can add data to the channel, or extract data from the channel. There are unbuffered channels, and buffered channels. for unbuffered channels if you're adding data to the channel, adding another data will be blocking until another go-routine extract such data. on the other hand receiving is also blocking until data is put in the channel.
-GO Buffered channel add a buffer to the go channel to avoid stalls, however it is not recommended to use it as a beginner, uses it only when it makes sense.
-- Channels can be `bidirectional (chan)`, `receive (<-chan)` only, or `send only(chan <-)` , send/receive only channels are useful when channels are passed as arguments, this indicates(and rather enforces) that the passed channel can only be received from (and you can send to), so this introduces some sort of control over how channels are used. think of pkgs where I don't want users to send anything to my channel.
+Channels are typed conduits for communication between goroutines.
+
+```Go
+// Unbuffered channel - synchronous, blocks until both sender and receiver are ready
+ch := make(chan int)
+
+// Buffered channel - async up to capacity, blocks when full
+ch := make(chan int, 10)  // capacity of 10
+```
+
+### ⚠️ Channel Operations Cheat Sheet (Memorize This!)
+
+| Operation | Nil Channel | Closed Channel | Open Channel |
+|-----------|-------------|----------------|--------------|
+| **Send** `ch <- v` | Block forever | **PANIC** | Block until received (unbuffered) or buffer has space |
+| **Receive** `<-ch` | Block forever | Zero value, `ok=false` | Block until value available |
+| **Close** `close(ch)` | **PANIC** | **PANIC** | Succeeds, future receives get zero values |
+
+```Go
+// Check if channel is closed
+val, ok := <-ch
+if !ok {
+    fmt.Println("Channel closed!")
+}
+
+// Only sender should close a channel, NEVER the receiver
+// Closing is only necessary to signal "no more values coming"
+```
+
+### Channel Direction (Function Parameters)
+
+```Go
+// Send-only channel
+func producer(ch chan<- int) {
+    ch <- 42
+    // <-ch  // Compile error!
+}
+
+// Receive-only channel
+func consumer(ch <-chan int) {
+    val := <-ch
+    // ch <- 1  // Compile error!
+}
+
+// Bidirectional converts to directional automatically
+ch := make(chan int)
+go producer(ch)  // chan int -> chan<- int
+go consumer(ch)  // chan int -> <-chan int
+```
 
 ### Example 1
 
@@ -1119,6 +1668,199 @@ Output:
     Final Sum 15
 ```
 
+## Select Statement (Critical for Interviews!)
+
+`select` lets a goroutine wait on multiple channel operations. It's like a `switch` for channels.
+
+```Go
+select {
+case msg := <-ch1:
+    fmt.Println("Received from ch1:", msg)
+case ch2 <- value:
+    fmt.Println("Sent to ch2")
+case <-time.After(time.Second * 5):
+    fmt.Println("Timeout after 5 seconds!")
+default:
+    fmt.Println("No channel ready, don't block")
+}
+```
+
+### Common Select Patterns
+
+```Go
+// 1. Non-blocking receive
+select {
+case msg := <-ch:
+    process(msg)
+default:
+    // Channel empty, continue without blocking
+}
+
+// 2. Non-blocking send
+select {
+case ch <- msg:
+    // Sent successfully
+default:
+    // Channel full, drop message or handle
+}
+
+// 3. Timeout pattern
+select {
+case result := <-workChan:
+    fmt.Println("Got result:", result)
+case <-time.After(time.Second * 10):
+    fmt.Println("Timed out!")
+}
+
+// 4. Cancellation with done channel
+done := make(chan struct{})
+
+go func() {
+    for {
+        select {
+        case <-done:
+            fmt.Println("Cancelled!")
+            return
+        case data := <-dataChan:
+            process(data)
+        }
+    }
+}()
+
+// To cancel:
+close(done)  // All receivers of done will unblock
+```
+
+## Context Package (Essential for Production Code!)
+
+The `context` package is the standard way to handle cancellation, timeouts, and request-scoped values.
+
+```Go
+import "context"
+
+// Creating contexts
+ctx := context.Background()  // Root context, never cancelled
+
+// With cancellation
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()  // Always call cancel to release resources!
+
+// With timeout
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+// With deadline
+deadline := time.Now().Add(10 * time.Second)
+ctx, cancel := context.WithDeadline(context.Background(), deadline)
+defer cancel()
+
+// With value (use sparingly - for request-scoped data only)
+ctx := context.WithValue(parentCtx, "userID", 123)
+userID := ctx.Value("userID").(int)
+```
+
+### Using Context in Functions
+
+```Go
+func doWork(ctx context.Context) error {
+    // Check if already cancelled
+    select {
+    case <-ctx.Done():
+        return ctx.Err()  // context.Canceled or context.DeadlineExceeded
+    default:
+    }
+    
+    // Do work with periodic cancellation checks
+    for i := 0; i < 100; i++ {
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+        default:
+            // Do iteration work
+        }
+    }
+    return nil
+}
+
+// HTTP handler example
+func handler(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()  // Get context from request
+    
+    result, err := doSlowOperation(ctx)
+    if err != nil {
+        if err == context.Canceled {
+            // Client disconnected
+            return
+        }
+        http.Error(w, err.Error(), 500)
+        return
+    }
+    
+    fmt.Fprint(w, result)
+}
+```
+
+> 🎯 **Interview Tip:** "How do you handle timeouts in Go?" - Use `context.WithTimeout` and pass the context through your call chain. Always check `ctx.Done()` in long-running operations.
+
+## Common Concurrency Patterns
+
+### Worker Pool
+
+```Go
+func workerPool(numWorkers int, jobs <-chan int, results chan<- int) {
+    var wg sync.WaitGroup
+    
+    for i := 0; i < numWorkers; i++ {
+        wg.Add(1)
+        go func(workerID int) {
+            defer wg.Done()
+            for job := range jobs {
+                results <- process(job)
+            }
+        }(i)
+    }
+    
+    wg.Wait()
+    close(results)
+}
+```
+
+### Fan-Out, Fan-In
+
+```Go
+// Fan-out: distribute work to multiple goroutines
+func fanOut(input <-chan int, n int) []<-chan int {
+    outputs := make([]<-chan int, n)
+    for i := 0; i < n; i++ {
+        outputs[i] = worker(input)
+    }
+    return outputs
+}
+
+// Fan-in: merge multiple channels into one
+func fanIn(channels ...<-chan int) <-chan int {
+    var wg sync.WaitGroup
+    out := make(chan int)
+    
+    for _, ch := range channels {
+        wg.Add(1)
+        go func(c <-chan int) {
+            defer wg.Done()
+            for v := range c {
+                out <- v
+            }
+        }(ch)
+    }
+    
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    
+    return out
+}
+```
+
 
 --------------------------------------------------------------------------
 
@@ -1127,7 +1869,13 @@ Output:
 # 🐞Go Error Handling
 
 ## Notes
-Go doesn't use try/catch and exceptions to handle errors, instead, functions also returns an error along with its own return. programmer should then check this error by an if-condition and deiced what to do accordingly
+Go doesn't use try/catch and exceptions to handle errors. Instead, functions return an error as the last return value. The programmer should check this error and handle it explicitly.
+
+**Go's Error Handling Philosophy:**
+- Errors are values, not exceptions
+- Handle errors where they occur
+- Return errors to callers who can handle them appropriately
+- Don't ignore errors!
 
 ## Example
 
@@ -1218,3 +1966,385 @@ func main() {
       fmt.Println(ae.prob)
   }
 ```
+
+## Error Wrapping (Go 1.13+)
+
+Error wrapping lets you add context to errors while preserving the original error for inspection.
+
+```Go
+import (
+    "errors"
+    "fmt"
+    "os"
+)
+
+// Wrapping errors with %w verb
+func readConfig(path string) error {
+    _, err := os.Open(path)
+    if err != nil {
+        // Wrap the error with additional context
+        return fmt.Errorf("failed to read config from %s: %w", path, err)
+    }
+    return nil
+}
+
+// Unwrapping and checking errors
+var ErrNotFound = errors.New("not found")
+var ErrPermission = errors.New("permission denied")
+
+func doSomething() error {
+    return fmt.Errorf("operation failed: %w", ErrNotFound)
+}
+
+func main() {
+    err := doSomething()
+    
+    // errors.Is - check if error IS or WRAPS a specific error
+    if errors.Is(err, ErrNotFound) {
+        fmt.Println("Resource not found!")  // This prints
+    }
+    
+    // errors.As - extract specific error type from chain
+    var pathErr *os.PathError
+    if errors.As(err, &pathErr) {
+        fmt.Println("Path error on:", pathErr.Path)
+    }
+    
+    // Unwrap to get the next error in chain
+    unwrapped := errors.Unwrap(err)
+    fmt.Println(unwrapped)  // "not found"
+}
+```
+
+> 🎯 **Interview Tip:** Use `errors.Is()` for sentinel errors (like `io.EOF`) and `errors.As()` for error types (like `*os.PathError`). Never use `==` for wrapped errors!
+
+## Panic and Recover
+
+`panic` is for unrecoverable errors. `recover` can catch panics (but should be used sparingly).
+
+```Go
+// panic - stops normal execution
+func mustParse(s string) int {
+    i, err := strconv.Atoi(s)
+    if err != nil {
+        panic(fmt.Sprintf("invalid number: %s", s))
+    }
+    return i
+}
+
+// recover - catches panics (only works in deferred functions!)
+func safeCall() (err error) {
+    defer func() {
+        if r := recover(); r != nil {
+            err = fmt.Errorf("recovered from panic: %v", r)
+        }
+    }()
+    
+    riskyOperation()  // Might panic
+    return nil
+}
+
+// Common pattern: recover at API boundary
+func httpHandler(w http.ResponseWriter, r *http.Request) {
+    defer func() {
+        if err := recover(); err != nil {
+            log.Printf("panic recovered: %v\n%s", err, debug.Stack())
+            http.Error(w, "Internal Server Error", 500)
+        }
+    }()
+    
+    handleRequest(w, r)
+}
+```
+
+### When to Use Panic vs Error
+
+| Use Panic | Use Error |
+|-----------|-----------|
+| Programming bugs (nil pointer, index out of range) | Expected failures (file not found, network timeout) |
+| Impossible states ("this should never happen") | User input validation |
+| Initialization failures (can't start server) | Business logic failures |
+| In `init()` functions | Almost everywhere else |
+
+> 🎯 **Interview Tip:** "When should you use panic?" - Only for truly unrecoverable errors or programmer bugs. Use errors for anything that could reasonably happen during normal operation.
+
+
+--------------------------------------------------------------------------
+
+
+
+# 🧬 Go Generics (Go 1.18+)
+
+Generics allow you to write functions and types that work with multiple types.
+
+## Type Parameters
+
+```Go
+// Generic function
+func Min[T constraints.Ordered](a, b T) T {
+    if a < b {
+        return a
+    }
+    return b
+}
+
+// Usage
+fmt.Println(Min(3, 5))       // 3
+fmt.Println(Min(3.14, 2.71)) // 2.71
+fmt.Println(Min("a", "b"))   // "a"
+```
+
+## Generic Types
+
+```Go
+// Generic Stack
+type Stack[T any] struct {
+    items []T
+}
+
+func (s *Stack[T]) Push(item T) {
+    s.items = append(s.items, item)
+}
+
+func (s *Stack[T]) Pop() (T, bool) {
+    if len(s.items) == 0 {
+        var zero T
+        return zero, false
+    }
+    item := s.items[len(s.items)-1]
+    s.items = s.items[:len(s.items)-1]
+    return item, true
+}
+
+// Usage
+intStack := Stack[int]{}
+intStack.Push(1)
+intStack.Push(2)
+val, _ := intStack.Pop()  // 2
+
+stringStack := Stack[string]{}
+stringStack.Push("hello")
+```
+
+## Constraints
+
+```Go
+import "golang.org/x/exp/constraints"
+
+// Built-in constraints
+// any        - any type (alias for interface{})
+// comparable - types that support == and !=
+
+// From constraints package
+// Ordered    - types that support < > <= >=
+// Integer    - all integer types
+// Float      - all float types
+// Signed     - signed integers
+// Unsigned   - unsigned integers
+
+// Custom constraint
+type Number interface {
+    constraints.Integer | constraints.Float
+}
+
+func Sum[T Number](numbers []T) T {
+    var sum T
+    for _, n := range numbers {
+        sum += n
+    }
+    return sum
+}
+```
+
+
+--------------------------------------------------------------------------
+
+
+
+# 🧪 Go Testing
+
+## Basic Test
+
+```Go
+// math.go
+package math
+
+func Add(a, b int) int {
+    return a + b
+}
+
+// math_test.go
+package math
+
+import "testing"
+
+func TestAdd(t *testing.T) {
+    result := Add(2, 3)
+    if result != 5 {
+        t.Errorf("Add(2, 3) = %d; want 5", result)
+    }
+}
+```
+
+Run tests:
+```bash
+go test              # Run tests in current package
+go test ./...        # Run tests in all packages
+go test -v           # Verbose output
+go test -cover       # Show coverage
+go test -race        # Detect race conditions
+```
+
+## Table-Driven Tests (Go Idiom!)
+
+```Go
+func TestAdd(t *testing.T) {
+    tests := []struct {
+        name     string
+        a, b     int
+        expected int
+    }{
+        {"positive numbers", 2, 3, 5},
+        {"negative numbers", -1, -1, -2},
+        {"zero", 0, 0, 0},
+        {"mixed", -1, 5, 4},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            result := Add(tt.a, tt.b)
+            if result != tt.expected {
+                t.Errorf("Add(%d, %d) = %d; want %d", 
+                    tt.a, tt.b, result, tt.expected)
+            }
+        })
+    }
+}
+```
+
+## Benchmarks
+
+```Go
+func BenchmarkAdd(b *testing.B) {
+    for i := 0; i < b.N; i++ {
+        Add(2, 3)
+    }
+}
+```
+
+Run benchmarks:
+```bash
+go test -bench=.              # Run all benchmarks
+go test -bench=BenchmarkAdd   # Run specific benchmark
+go test -bench=. -benchmem    # Include memory allocations
+```
+
+## Test Helpers
+
+```Go
+// t.Helper() marks function as test helper
+// Error messages will show caller's line number
+func assertEqual(t *testing.T, got, want int) {
+    t.Helper()
+    if got != want {
+        t.Errorf("got %d; want %d", got, want)
+    }
+}
+
+// Cleanup for resources
+func TestWithTempFile(t *testing.T) {
+    f, err := os.CreateTemp("", "test")
+    if err != nil {
+        t.Fatal(err)
+    }
+    t.Cleanup(func() {
+        os.Remove(f.Name())
+    })
+    
+    // Use f...
+}
+```
+
+
+--------------------------------------------------------------------------
+
+
+
+# 📦 Go Modules
+
+## Initialize a Module
+
+```bash
+go mod init github.com/username/projectname
+```
+
+This creates `go.mod`:
+```
+module github.com/username/projectname
+
+go 1.21
+```
+
+## Common Commands
+
+```bash
+go mod tidy           # Add missing, remove unused dependencies
+go mod download       # Download dependencies to cache
+go mod vendor         # Copy dependencies to vendor/
+go mod verify         # Verify dependencies haven't changed
+go mod graph          # Print dependency graph
+go get package@v1.2.3 # Add/update specific version
+go get -u ./...       # Update all dependencies
+```
+
+## Version Selection
+
+```bash
+go get github.com/pkg/errors           # Latest version
+go get github.com/pkg/errors@v0.9.1    # Specific version
+go get github.com/pkg/errors@latest    # Latest version (explicit)
+go get github.com/pkg/errors@master    # Specific branch
+```
+
+## go.sum
+
+The `go.sum` file contains cryptographic checksums for dependencies. **Commit both `go.mod` and `go.sum` to version control!**
+
+
+--------------------------------------------------------------------------
+
+
+
+# 🎯 Interview Quick Reference
+
+## Top 10 Go Interview Questions
+
+1. **"Is Go pass-by-value or pass-by-reference?"**
+   → Always pass-by-value. Slices/maps/channels contain pointers internally.
+
+2. **"What's the difference between arrays and slices?"**
+   → Arrays: fixed size, value type. Slices: dynamic, reference underlying array.
+
+3. **"When would a goroutine leak?"**
+   → Blocked forever on channel with no sender/receiver, or waiting on mutex.
+
+4. **"What happens if you send to a closed channel?"**
+   → Panic!
+
+5. **"Explain `new` vs `make`"**
+   → `new`: allocates zeroed memory, returns pointer. `make`: initializes slice/map/channel, returns value.
+
+6. **"How do you handle errors in Go?"**
+   → Return error as last value, check for nil, wrap with context using %w.
+
+7. **"What's the empty interface?"**
+   → `interface{}` or `any`. Can hold any type. Use type assertions to extract.
+
+8. **"Explain Go's scheduler"**
+   → M:N threading. Goroutines (G) run on OS threads (M) managed by processors (P). GOMAXPROCS sets P count.
+
+9. **"Why doesn't Go have inheritance?"**
+   → Favors composition over inheritance. Use embedding for code reuse without tight coupling.
+
+10. **"How do you prevent race conditions?"**
+    → Channels (preferred), sync.Mutex, sync.RWMutex, atomic operations. Use `go run -race`.
